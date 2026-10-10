@@ -6,37 +6,25 @@ import { authClient } from '@/lib/auth-client';
 
 type Provider = 'google' | 'github';
 
-const providers: { id: Provider; label: string; icon: string; configured: boolean; envName: string }[] = [
-  {
-    id: 'google',
-    label: 'Google দিয়ে চালিয়ে যান',
-    icon: 'G',
-    configured: Boolean(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID),
-    envName: 'NEXT_PUBLIC_GOOGLE_CLIENT_ID',
-  },
-  {
-    id: 'github',
-    label: 'GitHub দিয়ে চালিয়ে যান',
-    icon: '⌘',
-    configured: Boolean(process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID),
-    envName: 'NEXT_PUBLIC_GITHUB_CLIENT_ID',
-  },
+const providers: { id: Provider; label: string; icon: string }[] = [
+  { id: 'google', label: 'Google দিয়ে চালিয়ে যান', icon: 'G' },
+  { id: 'github', label: 'GitHub দিয়ে চালিয়ে যান', icon: '⌘' },
 ];
 
 export default function SocialSignInButtons({ callbackURL = '/' }: { callbackURL?: string }) {
   const [loadingProvider, setLoadingProvider] = useState<Provider | null>(null);
 
-  async function handleSignIn(provider: Provider, configured: boolean, envName: string) {
-    if (!configured) {
-      toast.error(`${provider === 'google' ? 'Google' : 'GitHub'} login চালু করতে ${envName} এবং সংশ্লিষ্ট server credentials সেট করুন।`);
-      return;
-    }
-
+  async function handleSignIn(provider: Provider) {
     setLoadingProvider(provider);
     try {
       const result = await authClient.signIn.social({ provider, callbackURL });
       if (result.error) {
-        toast.error(result.error.message || `${provider} দিয়ে সাইন ইন করা যায়নি।`);
+        const providerName = provider === 'google' ? 'Google' : 'GitHub';
+        toast.error(
+          result.error.message
+            ? `${providerName} login: ${result.error.message}`
+            : `${providerName} login চালু নেই। Server environment-এ ${provider === 'google' ? 'GOOGLE_CLIENT_ID ও GOOGLE_CLIENT_SECRET' : 'GITHUB_CLIENT_ID ও GITHUB_CLIENT_SECRET'} সেট করুন।`,
+        );
         setLoadingProvider(null);
       }
     } catch {
@@ -57,7 +45,7 @@ export default function SocialSignInButtons({ callbackURL = '/' }: { callbackURL
             key={provider.id}
             type="button"
             disabled={loadingProvider !== null}
-            onClick={() => void handleSignIn(provider.id, provider.configured, provider.envName)}
+            onClick={() => void handleSignIn(provider.id)}
             className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-wait disabled:opacity-60"
           >
             <span aria-hidden="true" className="font-bold">{provider.icon}</span>

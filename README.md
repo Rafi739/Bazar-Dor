@@ -47,13 +47,23 @@ in the server terminal. For deployed environments, set `RESEND_API_KEY` and
 emails cannot be delivered. The recovery code expires after 10 minutes.
 
 Google and GitHub sign-in are available on both the sign-in and sign-up pages.
-For each provider, set its server-side client ID and secret plus the matching
-`NEXT_PUBLIC_*_CLIENT_ID` in `.env.local` and in your deployment environment.
-Register `http://localhost:3000/api/auth/callback/google` and
-`http://localhost:3000/api/auth/callback/github` as OAuth callback URLs for local
-development. For production, register the same paths on your deployed domain.
-Never expose provider secrets in `NEXT_PUBLIC_*` variables. Restart the dev server
-after changing `.env.local`.
+Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, and/or
+`GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, in `.env.local` and your deployment
+environment. These are server-only credentials; do not expose them as
+`NEXT_PUBLIC_*` variables. Set `BETTER_AUTH_URL` to the exact site origin
+(for example `https://your-domain.example`) in production. Vercel deployments
+fall back to the deployment's `VERCEL_URL` when `BETTER_AUTH_URL` is not set.
+
+Register these exact callback URLs in the OAuth provider settings:
+
+- Local Google: `http://localhost:3000/api/auth/callback/google`
+- Local GitHub: `http://localhost:3000/api/auth/callback/github`
+- Production Google: `https://your-domain.example/api/auth/callback/google`
+- Production GitHub: `https://your-domain.example/api/auth/callback/github`
+
+The production domain in each provider must match `BETTER_AUTH_URL`. Restart the
+development server after changing `.env.local`, and redeploy after changing
+deployment environment variables.
 
 ## Product data API
 
