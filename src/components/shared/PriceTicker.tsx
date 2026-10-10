@@ -1,23 +1,45 @@
-"use client";
-import React from 'react';
+import { Product } from '@/types/product';
 
-export default function PriceTicker({ products }: { products: { emoji?: string; name: string; currentPrice: number; unit: string; changePercentage: number }[] }) {
-  if (!products || products.length === 0) return null;
+interface PriceTickerProps {
+  products: Product[];
+}
+
+export default function PriceTicker({ products }: PriceTickerProps) {
+  
+  const tickerProducts = products?.length > 0 ? products : [
+    { id: 1, slug: 's', nameBn: 'স্বর্ণমাছি চাল', category: 'c', unit: 'কেজি', image: '🍚', today: 148, change: { dir: 'up', pct: 2.1 } },
+    { id: 2, slug: 'm', nameBn: 'মিনিকেট চাল', category: 'c', unit: 'কেজি', image: '🍚', today: 99, change: { dir: 'down', pct: 2.9 } },
+    { id: 3, slug: 'b', nameBn: 'বাটাম সাইজ চাল', category: 'c', unit: 'কেজি', image: '🍚', today: 66, change: { dir: 'up', pct: 3.1 } },
+    { id: 4, slug: 'd', nameBn: 'মসুর ডাল', category: 'd', unit: 'কেজি', image: '🫘', today: 142, change: { dir: 'up', pct: 2.9 } },
+  ];
 
   return (
-    <div className="bg-emerald-900 text-white py-2 overflow-hidden whitespace-nowrap relative shadow-inner">
-      <div className="inline-block animate-marquee flex space-x-8 text-sm font-medium">
-        {products.concat(products).map((item, idx) => {
-          const isUp = item.changePercentage >= 0;
+    <div className="bg-white border-b border-gray-100 py-3 overflow-hidden relative w-full">
+     
+      <div className="absolute left-0 top-0 bottom-0 w-12 bg-linear-to-r from-white to-transparent z-10 pointer-events-none"></div>
+      <div className="absolute right-0 top-0 bottom-0 w-12 bg-linear-to-l from-white to-transparent z-10 pointer-events-none"></div>
+
+      <div className="flex w-max animate-marquee items-center">
+       
+        {[...tickerProducts, ...tickerProducts, ...tickerProducts].map((product, index) => {
+          const isUp = product.change?.dir === 'up';
+          const isDown = product.change?.dir === 'down';
+          
           return (
-            <span key={idx} className="inline-flex items-center space-x-2 px-4 border-r border-emerald-700">
-              <span>{item.emoji || "📦"}</span>
-              <span>{item.name}</span>
-              <span className="font-bold">৳{item.currentPrice} / {item.unit}</span>
-              <span className={isUp ? "text-red-400 font-bold" : "text-emerald-400 font-bold"}>
-                {isUp ? "▲" : "▼"} {Math.abs(item.changePercentage)}%
+            <div key={index} className="flex items-center gap-2.5 px-6 border-r border-gray-100 whitespace-nowrap text-sm">
+              <span className="text-lg">{product.image || '🛒'}</span>
+              <span className="font-semibold text-gray-800">{product.nameBn}</span>
+              <span className="text-gray-900 font-bold">{product.today} টাকা/{product.unit}</span>
+              
+              <span className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-bold ${
+                isUp ? 'text-emerald-700 bg-emerald-50' : 
+                isDown ? 'text-rose-700 bg-rose-50' : 
+                'text-gray-700 bg-gray-50'
+              }`}>
+                {isUp ? '▲' : isDown ? '▼' : '—'} 
+                {Math.abs(product.change?.pct || 0)}%
               </span>
-            </span>
+            </div>
           );
         })}
       </div>

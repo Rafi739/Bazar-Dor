@@ -1,35 +1,35 @@
-const BASE_URL_1 = "https://api.api-store.workers.dev/api/bazardor";
-const BASE_URL_2 = "https://api.abcz.workers.dev/api/bazardor";
+import 'server-only'; 
+import { Product } from '@/types/product';
+import fs from 'fs';
+import path from 'path';
 
-async function fetchWithFallback(endpoint: string) {
+
+export async function getAllProducts(): Promise<Product[]> {
   try {
-    const res = await fetch(`${BASE_URL_1}${endpoint}`, { cache: 'no-store' });
-    if (!res.ok) throw new Error("Primary API failed");
-    return await res.json();
+    const filePath = path.join(process.cwd(), 'public/data/products.json');
+    const fileData = fs.readFileSync(filePath, 'utf-8');
+    const data: Product[] = JSON.parse(fileData);
+    return data;
   } catch (error) {
-    try {
-      const res = await fetch(`${BASE_URL_2}${endpoint}`, { cache: 'no-store' });
-      if (!res.ok) throw new Error("Alternative API failed");
-      return await res.json();
-    } catch (err) {
-      console.error("API fetch error:", err);
-      return [];
-    }
+    console.error('Error reading local products:', error);
+    return [];
   }
 }
 
-export async function getAllProducts() {
-  return await fetchWithFallback("/products");
+
+export const fetchProducts = getAllProducts;
+
+
+export async function fetchProductBySlug(slug: string): Promise<Product | null> {
+  try {
+    const products = await getAllProducts();
+    const product = products.find((p) => p.slug === slug);
+    return product || null;
+  } catch (error) {
+    console.error(`Error fetching product ${slug}:`, error);
+    return null;
+  }
 }
 
-export async function getProductsByCategory(categorySlug: string) {
-  return await fetchWithFallback(`/products?category=${categorySlug}`);
-}
 
-export async function getSingleProduct(slug: string) {
-  return await fetchWithFallback(`/products/${slug}`);
-}
-
-export async function getCategories() {
-  return await fetchWithFallback("/categories");
-}
+export const getSingleProduct = fetchProductBySlug;

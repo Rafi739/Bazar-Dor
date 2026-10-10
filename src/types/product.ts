@@ -1,24 +1,20 @@
-export interface Product {
-  id: string | number;
-  slug: string;
-  name: string;
-  category: string;
-  categorySlug: string;
-  unit: string;
-  currentPrice: number;
-  minPrice?: number;
-  maxPrice?: number;
-  avgPrice?: number;
-  changePercentage: number;
-  emoji: string;
-  markets?: {
-    bazarName: string;
-    price: number;
-  }[];
-}
 
 export interface Category {
-  name: string;
+  id: string;
+  nameBn: string;
+  icon: string; 
+}
+
+export interface Product {
+  id: number;
   slug: string;
-  icon?: string;
+  nameBn: string;
+  category: string;
+  unit: string;
+  image: string; 
+  today: number;
+  change: {
+    dir: 'up' | 'down' | 'flat';
+    pct: number;
+  };
 }
