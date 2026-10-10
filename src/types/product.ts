@@ -1,20 +1,14 @@
 
-export interface Category {
-  id: string;
-  nameBn: string;
-  icon: string; 
-}
-
 export interface Product {
-  id: number;
+  id: string | number;
   slug: string;
   nameBn: string;
   category: string;
   unit: string;
-  image: string; 
+  image?: string;
   today: number;
-  change: {
-    dir: 'up' | 'down' | 'flat';
+  change?: {
+    dir: 'up' | 'down' | 'same';
     pct: number;
   };
 }

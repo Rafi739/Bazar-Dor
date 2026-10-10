@@ -1,25 +1,34 @@
+import Image from 'next/image';
+
 export default function Hero() {
   return (
-    <section className="bg-linear-to-br from-emerald-700 via-emerald-800 to-teal-900 text-white py-14 px-6 md:px-10 rounded-3xl max-w-6xl mx-auto my-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
-      <div className="max-w-xl">
-        <span className="bg-emerald-600/60 text-emerald-100 text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-emerald-500/30">
-          রিয়েল-টাইম প্রাইস ট্র্যাকিং
-        </span>
-        <h1 className="text-3xl md:text-5xl font-extrabold mt-5 mb-4 leading-tight tracking-tight">
-          প্রয়োজনীয় পণ্যের দাম এখন হাতের মুঠোয়
-        </h1>
-        <p className="text-emerald-100/90 text-base md:text-lg mb-8 leading-relaxed">
-          বাংলাদেশের পাইকারি ও খুচরা বাজারের নিত্যপ্রয়োজনীয় পণ্যের সঠিক দাম, দাম বাড়া-কমার রিয়েল-টাইম তথ্য এবং ক্যাটাগরি ভিত্তিক আপডেট জানুন।
-        </p>
-        <a
-          href="#shob-ponno"
-          className="btn bg-white text-emerald-900 hover:bg-emerald-50 border-none font-bold px-8 py-3.5 rounded-xl shadow-lg transition transform hover:-translate-y-0.5"
-        >
-          সব পণ্য দেখুন 👇
-        </a>
-      </div>
-      <div className="text-8xl md:text-9xl bg-emerald-900/40 p-8 rounded-3xl border border-emerald-700/50 shadow-inner">
-        📈🛒
+    <section className="mx-auto my-4 max-w-6xl rounded-2xl bg-[#f0f5f1] p-3 sm:p-4">
+      <div className="flex min-h-36 items-center justify-between gap-4 rounded-xl border border-[#e0e8e1] bg-[#f9fbf9] px-4 py-5 sm:px-7 md:px-8">
+        <div className="max-w-xl">
+          <span className="inline-flex rounded-full bg-[#e4f3e9] px-3 py-1 text-[10px] font-semibold text-emerald-800">
+            প্রতিদিন, সব বাজারের, সঠিক দর
+          </span>
+          <h1 className="mt-2 text-xl font-extrabold leading-tight tracking-tight text-[#26332c] sm:text-2xl md:text-3xl">
+            আজকের বাজারের দাম এক নজরে
+          </h1>
+          <p className="mt-2 max-w-lg text-xs leading-relaxed text-gray-500 sm:text-sm">
+            চাল, ডাল, তেল, মাছ, মাংস, সবজি ও ফলের দাম — বাজারদর দেখুন, দাম বাড়া-কমার আপডেট জানুন।
+          </p>
+          <a
+            href="#shob-ponno"
+            className="mt-4 inline-flex rounded-md bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-800"
+          >
+            সব দাম দেখুন
+          </a>
+        </div>
+        <Image
+          src="/assets/bazar-hero.png"
+          alt="বাজারের ঝুড়িতে তাজা সবজি"
+          width={300}
+          height={200}
+          priority
+          className="h-auto w-24 shrink-0 sm:w-32 md:w-40"
+        />
       </div>
     </section>
   );

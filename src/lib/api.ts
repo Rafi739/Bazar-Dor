@@ -1,12 +1,13 @@
-import 'server-only'; 
-import { Product } from '@/types/product';
 import fs from 'fs';
 import path from 'path';
-
+import { Product } from '@/types/product';
 
 export async function getAllProducts(): Promise<Product[]> {
   try {
     const filePath = path.join(process.cwd(), 'public/data/products.json');
+    if (!fs.existsSync(filePath)) {
+      return [];
+    }
     const fileData = fs.readFileSync(filePath, 'utf-8');
     const data: Product[] = JSON.parse(fileData);
     return data;
@@ -16,9 +17,7 @@ export async function getAllProducts(): Promise<Product[]> {
   }
 }
 
-
 export const fetchProducts = getAllProducts;
-
 
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
   try {
@@ -30,6 +29,5 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
     return null;
   }
 }
-
 
 export const getSingleProduct = fetchProductBySlug;
