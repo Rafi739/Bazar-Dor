@@ -5,9 +5,14 @@ import { getAllProducts } from "@/lib/api";
 export default async function HomePage() {
   const products = await getAllProducts();
 
-  const sortedByChange = [...products].sort((a, b) => b.changePercentage - a.changePercentage);
-  const topRisers = sortedByChange.slice(0, 6);
-  const topFallers = [...products].sort((a, b) => a.changePercentage - b.changePercentage).slice(0, 6);
+  const topRisers = products
+    .filter((product) => product.change?.dir === 'up')
+    .sort((first, second) => Math.abs(second.change?.pct ?? 0) - Math.abs(first.change?.pct ?? 0))
+    .slice(0, 6);
+  const topFallers = products
+    .filter((product) => product.change?.dir === 'down')
+    .sort((first, second) => Math.abs(second.change?.pct ?? 0) - Math.abs(first.change?.pct ?? 0))
+    .slice(0, 6);
 
   return (
     <main className="min-h-screen bg-gray-50/50 pb-16">

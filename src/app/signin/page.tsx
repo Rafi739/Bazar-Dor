@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
+import SocialSignInButtons from '@/components/auth/SocialSignInButtons';
 
 export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -60,6 +61,7 @@ export default function SignInPage() {
             {isLoading ? 'সাইন ইন হচ্ছে...' : 'সাইন ইন'}
           </button>
         </form>
+        <SocialSignInButtons />
 
         <p className="mt-6 text-center text-xs text-gray-600">
           অ্যাকাউন্ট নেই?{' '}

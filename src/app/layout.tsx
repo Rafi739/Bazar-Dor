@@ -1,8 +1,9 @@
 import Navbar from "@/components/shared/Navbar";
 import PriceTicker from "@/components/shared/PriceTicker";
 import Footer from "@/components/shared/Footer";
-import { getAllProducts } from "@/lib/api";
+import { getAllProducts, getCategories } from "@/lib/api";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Toaster } from "sonner";
 import './globals.css';
 
@@ -21,12 +22,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const products = await getAllProducts();
+  const [products, categories] = await Promise.all([getAllProducts(), getCategories()]);
 
   return (
     <html lang="bn">
       <body className="bg-gray-50/50 flex flex-col min-h-screen" suppressHydrationWarning={true}>
-        <Navbar />
+        <Suspense fallback={<header aria-hidden="true" className="h-28 border-b border-gray-100 bg-white" />}>
+          <Navbar categories={categories} />
+        </Suspense>
         <PriceTicker products={products} />
         
         <main className="grow">

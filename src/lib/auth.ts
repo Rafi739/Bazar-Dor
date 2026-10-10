@@ -50,6 +50,7 @@ const authOptions = {
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
+    revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, url }) => {
       await sendAuthEmail(
         user.email,

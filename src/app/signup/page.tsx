@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
+import SocialSignInButtons from '@/components/auth/SocialSignInButtons';
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,17 +38,6 @@ export default function SignUpPage() {
       toast.error('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।');
     } finally {
       setIsLoading(false);
-    }
-  }
-
-  async function handleSocialSignIn(provider: 'google' | 'github') {
-    try {
-      const result = await authClient.signIn.social({ provider, callbackURL: '/' });
-      if (result.error) {
-        toast.error(result.error.message || `${provider} দিয়ে সাইন ইন করা যায়নি।`);
-      }
-    } catch {
-      toast.error('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।');
     }
   }
 
@@ -90,28 +80,7 @@ export default function SignUpPage() {
           </button>
         </form>
 
-        {(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID) && (
-          <>
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-              <div className="relative flex justify-center text-xs"><span className="bg-white px-3 text-gray-400">অথবা</span></div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-                <button type="button" onClick={() => void handleSocialSignIn('google')}
-                  className="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50">
-                  🌐 Google দিয়ে চালিয়ে যান
-                </button>
-              )}
-              {process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID && (
-                <button type="button" onClick={() => void handleSocialSignIn('github')}
-                  className="rounded-lg border border-gray-200 px-3 py-2.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50">
-                  🐙 GitHub দিয়ে চালিয়ে যান
-                </button>
-              )}
-            </div>
-          </>
-        )}
+        <SocialSignInButtons />
 
         <p className="mt-6 text-center text-xs text-gray-600">
           অ্যাকাউন্ট আছে?{' '}

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Product } from '@/types/product';
 
 interface PriceTickerProps {
@@ -5,7 +6,8 @@ interface PriceTickerProps {
 }
 
 export default function PriceTicker({ products }: PriceTickerProps) {
-  const tickerProducts = products?.length > 0 ? products : [
+  const hasProducts = products.length > 0;
+  const tickerProducts = hasProducts ? products : [
     { id: 1, slug: 's', nameBn: 'স্বর্ণমাছি চাল', category: 'c', unit: 'কেজি', image: '🍚', today: 148, change: { dir: 'up', pct: 2.1 } },
     { id: 2, slug: 'm', nameBn: 'মিনিকেট চাল', category: 'c', unit: 'কেজি', image: '🍚', today: 99, change: { dir: 'down', pct: 2.9 } },
     { id: 3, slug: 'b', nameBn: 'বাটাম সাইজ চাল', category: 'c', unit: 'কেজি', image: '🍚', today: 66, change: { dir: 'up', pct: 3.1 } },
@@ -21,9 +23,9 @@ export default function PriceTicker({ products }: PriceTickerProps) {
         {[...tickerProducts, ...tickerProducts, ...tickerProducts].map((product, index) => {
           const isUp = product.change?.dir === 'up';
           const isDown = product.change?.dir === 'down';
-          
-          return (
-            <div key={index} className="flex items-center gap-2.5 px-6 border-r border-gray-100 whitespace-nowrap text-sm">
+
+          const tickerItem = (
+            <>
               <span className="text-lg">{product.image || '🛒'}</span>
               <span className="font-semibold text-gray-800">{product.nameBn}</span>
               <span className="text-gray-900 font-bold">{product.today} টাকা/{product.unit}</span>
@@ -36,6 +38,23 @@ export default function PriceTicker({ products }: PriceTickerProps) {
                 {isUp ? '▲' : isDown ? '▼' : '—'} 
                 {Math.abs(product.change?.pct || 0)}%
               </span>
+            </>
+          );
+
+          const className = "flex items-center gap-2.5 px-6 border-r border-gray-100 whitespace-nowrap text-sm";
+
+          return hasProducts ? (
+            <Link
+              key={index}
+              href={`/product/${product.slug}`}
+              aria-label={`${product.nameBn} বিস্তারিত দেখুন`}
+              className={`${className} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600`}
+            >
+              {tickerItem}
+            </Link>
+          ) : (
+            <div key={index} className={className}>
+              {tickerItem}
             </div>
           );
         })}

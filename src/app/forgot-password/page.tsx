@@ -10,6 +10,29 @@ export default function ForgotPasswordPage() {
   const [codeSent, setCodeSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  async function requestResetCode(requestedEmail: string) {
+    const result = await authClient.emailOtp.requestPasswordReset({ email: requestedEmail });
+    if (result.error) {
+      toast.error(result.error.message || 'ইমেইলে কোড পাঠানো যায়নি।');
+      return;
+    }
+
+    setEmail(requestedEmail);
+    setCodeSent(true);
+    toast.success('রিসেট কোড পাঠানো হয়েছে। Local development হলে terminal-এ কোড দেখুন।');
+  }
+
+  async function handleResendCode() {
+    setIsLoading(true);
+    try {
+      await requestResetCode(email);
+    } catch {
+      toast.error('রিসেট কোড পাঠানো যায়নি। ইমেইল সার্ভারের configuration যাচাই করে আবার চেষ্টা করুন।');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsLoading(true);
@@ -18,17 +41,7 @@ export default function ForgotPasswordPage() {
     try {
       if (!codeSent) {
         const requestedEmail = String(formData.get('email')).trim();
-        const result = await authClient.emailOtp.requestPasswordReset({
-          email: requestedEmail,
-        });
-
-        if (result.error) {
-          toast.error(result.error.message || 'ইমেইলে কোড পাঠানো যায়নি।');
-        } else {
-          setEmail(requestedEmail);
-          setCodeSent(true);
-          toast.success('কোড পাঠানো হয়েছে। স্থানীয় development হলে terminal-এ কোড দেখুন।');
-        }
+        await requestResetCode(requestedEmail);
       } else {
         const password = String(formData.get('password'));
         if (password !== formData.get('confirmPassword')) {
@@ -48,7 +61,7 @@ export default function ForgotPasswordPage() {
         }
       }
     } catch {
-      toast.error('ইমেইল পাঠানো যায়নি। ইমেইল সার্ভারের কনফিগারেশন যাচাই করে আবার চেষ্টা করুন।');
+      toast.error('রিসেট কোড পাঠানো যায়নি। Resend API key ও verified sender address কনফিগার করা আছে কি না যাচাই করুন।');
     } finally {
       setIsLoading(false);
     }
@@ -61,6 +74,11 @@ export default function ForgotPasswordPage() {
         <p className="mt-2 text-sm text-gray-600">
           {codeSent ? `${email}-এ পাঠানো ৬ সংখ্যার কোড ও নতুন পাসওয়ার্ড দিন।` : 'আপনার অ্যাকাউন্টের ইমেইল দিন। আমরা ৬ সংখ্যার কোড পাঠাব।'}
         </p>
+        {!codeSent && (
+          <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
+            ইমেইল পাঠাতে Resend-এর verified sender এবং server-এ RESEND_API_KEY ও AUTH_EMAIL_FROM লাগবে। Local development-এ কোড terminal-এ দেখা যায়।
+          </p>
+        )}
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           {!codeSent ? (
             <div>
@@ -93,10 +111,16 @@ export default function ForgotPasswordPage() {
           </button>
         </form>
         {codeSent && (
-          <button type="button" onClick={() => setCodeSent(false)}
-            className="mt-3 w-full text-sm font-medium text-emerald-700 hover:underline">
-            অন্য ইমেইল ব্যবহার করুন
-          </button>
+          <div className="mt-3 flex flex-col gap-2">
+            <button type="button" disabled={isLoading} onClick={() => void handleResendCode()}
+              className="w-full text-sm font-medium text-emerald-700 hover:underline disabled:opacity-60">
+              কোড পাননি? আবার পাঠান
+            </button>
+            <button type="button" onClick={() => setCodeSent(false)}
+              className="w-full text-sm font-medium text-gray-500 hover:underline">
+              অন্য ইমেইল ব্যবহার করুন
+            </button>
+          </div>
         )}
         <p className="mt-6 text-center text-sm text-gray-600">
           <Link href="/signin" className="font-semibold text-emerald-600 hover:underline">সাইন ইন-এ ফিরে যান</Link>

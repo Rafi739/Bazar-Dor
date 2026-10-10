@@ -12,19 +12,21 @@ export default function ProductCard({ product }: ProductCardProps) {
     pcs: 'প্রতি পিস',
   };
 
+  const direction = product.change?.dir;
   const badgeColor =
-    product.change.dir === 'up'
-      ? 'text-green-600 bg-green-50 border-green-200'
-      : product.change.dir === 'down'
-      ? 'text-red-600 bg-red-50 border-red-200'
-      : 'text-gray-600 bg-gray-50 border-gray-200';
+    direction === 'up'
+      ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+      : direction === 'down'
+        ? 'text-rose-600 bg-rose-50 border-rose-200'
+        : 'text-gray-600 bg-gray-50 border-gray-200';
 
   const arrowSymbol =
-    product.change.dir === 'up'
-      ? `▲ ${product.change.pct}%`
-      : product.change.dir === 'down'
-      ? `▼ ${Math.abs(product.change.pct)}%`
-      : `— ${product.change.pct}%`;
+    direction === 'up'
+      ? `▲ ${Math.abs(product.change?.pct ?? 0)}%`
+      : direction === 'down'
+        ? `▼ ${Math.abs(product.change?.pct ?? 0)}%`
+        : `— ${Math.abs(product.change?.pct ?? 0)}%`;
+  const formattedPrice = new Intl.NumberFormat('bn-BD').format(product.today);
 
   return (
     <Link href={`/product/${product.slug}`} className="block">
@@ -40,7 +42,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="mt-4 flex items-center justify-between border-t pt-3 border-gray-50">
           <div>
             <span className="text-xs text-gray-400 block">আজকের দাম</span>
-            <span className="text-lg font-bold text-gray-900">{product.today} টাকা</span>
+            <span className="text-lg font-bold text-gray-900">{formattedPrice} টাকা</span>
           </div>
           <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${badgeColor}`}>
             {arrowSymbol}

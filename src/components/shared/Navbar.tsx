@@ -6,12 +6,13 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
+import { Category } from '@/types/product';
 
 function getInitials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toLocaleUpperCase();
 }
 
-export default function Navbar() {
+export default function Navbar({ categories }: { categories: Category[] }) {
   const pathname = usePathname();
   const [currentDate, setCurrentDate] = useState('');
   const { data: session } = authClient.useSession();
@@ -48,19 +49,12 @@ export default function Navbar() {
   }
 
   return (
-    <header className="bg-white border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+    <header className="border-b border-gray-100 bg-white">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3">
-          <Image
-            src="/assets/logo-icon.png"
-            alt="বাজার দর"
-            width={36}
-            height={36}
-            className="rounded-xl"
-            priority
-          />
+          <Image src="/assets/logo-icon.png" alt="বাজার দর" width={36} height={36} className="rounded-xl" priority />
           <div>
-            <h1 className="text-xl font-bold text-gray-900 leading-tight">বাজার দর</h1>
+            <h1 className="text-xl font-bold leading-tight text-gray-900">বাজার দর</h1>
             <p className="text-xs text-gray-500">{currentDate || 'লোড হচ্ছে...'}</p>
           </div>
         </Link>
@@ -109,6 +103,29 @@ export default function Navbar() {
           </div>
         )}
       </div>
+      <nav aria-label="পণ্যের ক্যাটাগরি" className="border-t border-gray-100">
+        <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 sm:px-6 lg:px-8">
+          {categories.map((category) => {
+            const isActive = pathname === `/category/${category.slug}`;
+
+            return (
+              <Link
+                key={category.id}
+                href={`/category/${category.slug}`}
+                aria-current={isActive ? 'page' : undefined}
+                className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <span aria-hidden="true">{category.icon}</span>
+                {category.nameBn}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </header>
   );
 }

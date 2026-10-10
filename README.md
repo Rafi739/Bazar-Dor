@@ -41,9 +41,23 @@ Authentication uses Better Auth with a local SQLite database stored in `.local/a
 Copy `.env.example` to `.env.local`, set a private `BETTER_AUTH_SECRET` (at least 32 characters),
 and keep `.env.local` out of version control.
 
-Email password reset uses a 6-digit code and requires a Resend API key and a verified sender
-address in `RESEND_API_KEY` and `AUTH_EMAIL_FROM`. Restart the dev server after changing `.env.local`.
-Google and GitHub sign-in are optional; set each provider's client ID and
-secret, including its `NEXT_PUBLIC_*_CLIENT_ID`, to enable its button. Register
-`http://localhost:3000/api/auth/callback/google` or
-`http://localhost:3000/api/auth/callback/github` as the matching OAuth callback URL.
+Password recovery sends a 6-digit code. In local development, the code is printed
+in the server terminal. For deployed environments, set `RESEND_API_KEY` and
+`AUTH_EMAIL_FROM` to a sender address verified in Resend; otherwise recovery
+emails cannot be delivered. The recovery code expires after 10 minutes.
+
+Google and GitHub sign-in are available on both the sign-in and sign-up pages.
+For each provider, set its server-side client ID and secret plus the matching
+`NEXT_PUBLIC_*_CLIENT_ID` in `.env.local` and in your deployment environment.
+Register `http://localhost:3000/api/auth/callback/google` and
+`http://localhost:3000/api/auth/callback/github` as OAuth callback URLs for local
+development. For production, register the same paths on your deployed domain.
+Never expose provider secrets in `NEXT_PUBLIC_*` variables. Restart the dev server
+after changing `.env.local`.
+
+## Product data API
+
+Product and category data is fetched from the Bazar Dor API. The app tries
+`https://api.api-store.workers.dev/api/bazardor` first and
+`https://api.abcz.workers.dev/api/bazardor` as a backup. If both APIs are
+unavailable, it uses the matching JSON files in `public/data/`.
