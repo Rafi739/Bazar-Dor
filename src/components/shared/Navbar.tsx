@@ -1,14 +1,19 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
+
+function getInitials(name: string) {
+  return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toLocaleUpperCase();
+}
 
 export default function Navbar() {
   const pathname = usePathname();
   const [currentDate, setCurrentDate] = useState('');
-  const [authError, setAuthError] = useState('');
   const { data: session } = authClient.useSession();
 
   useEffect(() => {
@@ -30,14 +35,15 @@ export default function Navbar() {
   const isSignUp = pathname === '/signup';
 
   async function handleSignOut() {
-    setAuthError('');
     try {
       const result = await authClient.signOut();
       if (result.error) {
-        setAuthError(result.error.message || 'সাইন আউট করা যায়নি। আবার চেষ্টা করুন।');
+        toast.error(result.error.message || 'সাইন আউট করা যায়নি। আবার চেষ্টা করুন।');
+      } else {
+        toast.success('সাইন আউট হয়েছে।');
       }
     } catch {
-      setAuthError('সাইন আউট করা যায়নি। সার্ভারের সঙ্গে যোগাযোগ করে আবার চেষ্টা করুন।');
+      toast.error('সাইন আউট করা যায়নি। সার্ভারের সঙ্গে যোগাযোগ করে আবার চেষ্টা করুন।');
     }
   }
 
@@ -45,9 +51,14 @@ export default function Navbar() {
     <header className="bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          <div className="bg-emerald-600 p-2.5 rounded-xl text-white text-xl">
-            🛒
-          </div>
+          <Image
+            src="/assets/logo-icon.png"
+            alt="বাজার দর"
+            width={36}
+            height={36}
+            className="rounded-xl"
+            priority
+          />
           <div>
             <h1 className="text-xl font-bold text-gray-900 leading-tight">বাজার দর</h1>
             <p className="text-xs text-gray-500">{currentDate || 'লোড হচ্ছে...'}</p>
@@ -55,13 +66,32 @@ export default function Navbar() {
         </Link>
 
         {session ? (
-          <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-gray-700 sm:inline">{session.user.name}</span>
-            <button type="button" onClick={handleSignOut}
-              className="rounded-full bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100">
-              সাইন আউট
-            </button>
-          </div>
+          <details className="group relative">
+            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-full py-1 pl-1 pr-2 text-sm text-gray-800 hover:bg-gray-50">
+              {session.user.image ? (
+                <Image src={session.user.image} alt="" width={34} height={34} unoptimized className="h-[34px] w-[34px] rounded-full object-cover" />
+              ) : (
+                <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-emerald-700 text-xs font-bold text-white">
+                  {getInitials(session.user.name)}
+                </span>
+              )}
+              <span className="hidden max-w-28 truncate sm:inline">{session.user.name}</span>
+              <span aria-hidden="true" className="text-xs text-gray-500 transition group-open:rotate-180">⌄</span>
+            </summary>
+            <div className="absolute right-0 top-full z-30 mt-2 w-64 rounded-xl border border-gray-100 bg-white p-2 shadow-lg">
+              <div className="border-b border-gray-100 px-3 py-2">
+                <p className="truncate text-sm font-semibold text-gray-900">{session.user.name}</p>
+                <p className="truncate text-xs text-gray-500">{session.user.email}</p>
+              </div>
+              <Link href="/profile" className="mt-1 block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                আমার প্রোফাইল
+              </Link>
+              <button type="button" onClick={handleSignOut}
+                className="w-full rounded-lg px-3 py-2 text-left text-sm text-rose-600 hover:bg-rose-50">
+                সাইন আউট
+              </button>
+            </div>
+          </details>
         ) : (
           <div className="flex items-center gap-2 rounded-full border border-gray-100 bg-gray-50 p-1.5">
             <Link href="/signin"
@@ -79,7 +109,6 @@ export default function Navbar() {
           </div>
         )}
       </div>
-      {authError && <p role="alert" className="pb-2 text-center text-sm text-red-600">{authError}</p>}
     </header>
   );
 }

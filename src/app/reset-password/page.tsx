@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, Suspense, useState } from 'react';
+import { FormEvent, Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
 
 export default function ResetPasswordPage() {
@@ -16,20 +17,24 @@ export default function ResetPasswordPage() {
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const invalidToken = searchParams.get('error');
+  const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (invalidToken) {
+      toast.error('রিসেট লিংকটি অবৈধ বা মেয়াদোত্তীর্ণ। নতুন লিংক নিন.', { id: 'invalid-reset-token' });
+    }
+  }, [invalidToken]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError('');
-    setMessage('');
     setIsLoading(true);
 
     const formData = new FormData(event.currentTarget);
     const password = String(formData.get('password'));
     if (password !== formData.get('confirmPassword')) {
-      setError('দুটি পাসওয়ার্ড মিলছে না।');
+      toast.error('দুটি পাসওয়ার্ড মিলছে না।');
       setIsLoading(false);
       return;
     }
@@ -37,12 +42,13 @@ function ResetPasswordForm() {
     try {
       const result = await authClient.resetPassword({ newPassword: password, token });
       if (result.error) {
-        setError(result.error.message || 'পাসওয়ার্ড পরিবর্তন করা যায়নি। নতুন রিসেট লিংক নিন।');
+        toast.error(result.error.message || 'পাসওয়ার্ড পরিবর্তন করা যায়নি। নতুন রিসেট লিংক নিন।');
       } else {
-        setMessage('পাসওয়ার্ড পরিবর্তন হয়েছে। এখন নতুন পাসওয়ার্ড দিয়ে সাইন ইন করুন।');
+        toast.success('পাসওয়ার্ড পরিবর্তন হয়েছে। এখন নতুন পাসওয়ার্ড দিয়ে সাইন ইন করুন।');
+        setIsSuccess(true);
       }
     } catch {
-      setError('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। নতুন রিসেট লিংক নিয়ে আবার চেষ্টা করুন।');
+      toast.error('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। নতুন রিসেট লিংক নিয়ে আবার চেষ্টা করুন।');
     } finally {
       setIsLoading(false);
     }
@@ -52,9 +58,6 @@ function ResetPasswordForm() {
     <main className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center py-12 px-4">
       <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white px-6 py-8 shadow-sm sm:px-10">
         <h1 className="text-2xl font-bold text-gray-900">নতুন পাসওয়ার্ড সেট করুন</h1>
-        {searchParams.get('error') && (
-          <p role="alert" className="mt-4 text-sm text-red-600">রিসেট লিংকটি অবৈধ বা মেয়াদোত্তীর্ণ। নতুন লিংক নিন।</p>
-        )}
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="password" className="mb-1 block text-xs font-semibold text-gray-700">নতুন পাসওয়ার্ড</label>
@@ -66,9 +69,7 @@ function ResetPasswordForm() {
             <input id="confirmPassword" name="confirmPassword" type="password" autoComplete="new-password" minLength={8} required
               className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-emerald-600" />
           </div>
-          {message && <p role="status" className="text-sm text-emerald-700">{message}</p>}
-          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-          <button disabled={!token || isLoading || Boolean(message)} type="submit"
+          <button disabled={!token || isLoading || isSuccess} type="submit"
             className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-60">
             {isLoading ? 'পরিবর্তন হচ্ছে...' : 'পাসওয়ার্ড পরিবর্তন করুন'}
           </button>

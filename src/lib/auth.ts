@@ -1,5 +1,6 @@
 import { betterAuth, type BetterAuthOptions } from 'better-auth';
 import { getMigrations } from 'better-auth/db/migration';
+import { emailOTP } from 'better-auth/plugins/email-otp';
 import Database from 'better-sqlite3';
 import { Resend } from 'resend';
 import fs from 'node:fs';
@@ -27,6 +28,19 @@ const socialProviders = {
     : {}),
 };
 
+async function sendAuthEmail(email: string, subject: string, html: string, text: string) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.AUTH_EMAIL_FROM;
+  if (!apiKey || !from) {
+    throw new Error('Email service is not configured. Set RESEND_API_KEY and AUTH_EMAIL_FROM.');
+  }
+
+  const { error } = await new Resend(apiKey).emails.send({ from, to: email, subject, html, text });
+  if (error) {
+    throw new Error(`Could not send email: ${error.message}`);
+  }
+}
+
 const authOptions = {
   appName: 'Bazar Dor',
   database: new Database(path.join(databaseDirectory, 'auth.sqlite')),
@@ -37,25 +51,39 @@ const authOptions = {
     enabled: true,
     minPasswordLength: 8,
     sendResetPassword: async ({ user, url }) => {
-      const apiKey = process.env.RESEND_API_KEY;
-      const from = process.env.AUTH_EMAIL_FROM;
-      if (!apiKey || !from) {
-        throw new Error('Set RESEND_API_KEY and AUTH_EMAIL_FROM to send password reset emails.');
-      }
-
-      const { error } = await new Resend(apiKey).emails.send({
-        from,
-        to: user.email,
-        subject: 'Reset your Bazar Dor password',
-        html: `<p>We received a request to reset your password.</p><p><a href="${url}">Reset password</a></p><p>If you did not request this, you can ignore this email.</p>`,
-        text: `Reset your Bazar Dor password: ${url}\n\nIf you did not request this, you can ignore this email.`,
-      });
-
-      if (error) {
-        throw new Error(`Could not send password reset email: ${error.message}`);
-      }
+      await sendAuthEmail(
+        user.email,
+        'Reset your Bazar Dor password',
+        `<p>We received a request to reset your password.</p><p><a href="${url}">Reset password</a></p><p>If you did not request this, you can ignore this email.</p>`,
+        `Reset your Bazar Dor password: ${url}\n\nIf you did not request this, you can ignore this email.`,
+      );
     },
   },
+  plugins: [
+    emailOTP({
+      otpLength: 6,
+      expiresIn: 600,
+      allowedAttempts: 5,
+      sendVerificationOTP: async ({ email, otp, type }) => {
+        if (type !== 'forget-password') {
+          throw new Error(`Unsupported email code type: ${type}`);
+        }
+        if (!process.env.RESEND_API_KEY || !process.env.AUTH_EMAIL_FROM) {
+          if (process.env.NODE_ENV === 'development') {
+            console.info(`[Bazar Dor] Local password reset code for ${email}: ${otp}`);
+            return;
+          }
+          throw new Error('Email service is not configured. Set RESEND_API_KEY and AUTH_EMAIL_FROM.');
+        }
+        await sendAuthEmail(
+          email,
+          'Bazar Dor password reset code',
+          `<p>Your Bazar Dor password reset code is:</p><p style="font-size:28px;font-weight:bold;letter-spacing:8px">${otp}</p><p>This code expires in 10 minutes. If you did not request it, you can ignore this email.</p>`,
+          `Your Bazar Dor password reset code is ${otp}. It expires in 10 minutes.`,
+        );
+      },
+    }),
+  ],
 } satisfies BetterAuthOptions;
 
 export const auth = betterAuth(authOptions);

@@ -1,6 +1,5 @@
 import Hero from "@/components/home/Hero";
 import ProductCard from "@/components/home/ProductCard";
-import PriceTicker from "@/components/shared/PriceTicker";
 import { getAllProducts } from "@/lib/api";
 
 export default async function HomePage() {
@@ -12,11 +11,10 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen bg-gray-50/50 pb-16">
-      <PriceTicker products={products} />
       <div className="max-w-6xl mx-auto px-4">
         <Hero />
 
-        {/* Section A: আজ দাম বেড়েছে ▲ */}
+       
         <section className="my-10">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-black text-gray-900 border-l-4 border-rose-500 pl-3">
@@ -30,7 +28,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Section B: আজ দাম কমেছে ▼ */}
+       
         <section className="my-10">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-black text-gray-900 border-l-4 border-emerald-600 pl-3">
@@ -44,7 +42,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Section C: সব পণ্য */}
+       
         <section id="shob-ponno" className="my-12 pt-4">
           <div className="mb-6">
             <h2 className="text-2xl font-black text-gray-900 border-l-4 border-teal-700 pl-3">

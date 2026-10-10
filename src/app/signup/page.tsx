@@ -2,21 +2,20 @@
 
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
+import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
 
 export default function SignUpPage() {
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError('');
     setIsLoading(true);
 
     const formData = new FormData(event.currentTarget);
     const password = String(formData.get('password'));
     if (password !== formData.get('confirmPassword')) {
-      setError('দুটি পাসওয়ার্ড মিলছে না।');
+      toast.error('দুটি পাসওয়ার্ড মিলছে না।');
       setIsLoading(false);
       return;
     }
@@ -30,24 +29,25 @@ export default function SignUpPage() {
       });
 
       if (result.error) {
-        setError(result.error.message || 'অ্যাকাউন্ট তৈরি করা যায়নি। আবার চেষ্টা করুন।');
+        toast.error(result.error.message || 'অ্যাকাউন্ট তৈরি করা যায়নি। আবার চেষ্টা করুন।');
+      } else {
+        toast.success('অ্যাকাউন্ট তৈরি হয়েছে। স্বাগতম!');
       }
     } catch {
-      setError('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।');
+      toast.error('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।');
     } finally {
       setIsLoading(false);
     }
   }
 
   async function handleSocialSignIn(provider: 'google' | 'github') {
-    setError('');
     try {
       const result = await authClient.signIn.social({ provider, callbackURL: '/' });
       if (result.error) {
-        setError(result.error.message || `${provider} দিয়ে সাইন ইন করা যায়নি।`);
+        toast.error(result.error.message || `${provider} দিয়ে সাইন ইন করা যায়নি।`);
       }
     } catch {
-      setError('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।');
+      toast.error('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।');
     }
   }
 
@@ -84,7 +84,6 @@ export default function SignUpPage() {
               placeholder="আবার লিখুন"
               className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-emerald-600" />
           </div>
-          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
           <button disabled={isLoading} type="submit"
             className="mt-2 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60">
             {isLoading ? 'অ্যাকাউন্ট তৈরি হচ্ছে...' : 'অ্যাকাউন্ট তৈরি করুন'}

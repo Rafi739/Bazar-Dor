@@ -41,8 +41,9 @@ Authentication uses Better Auth with a local SQLite database stored in `.local/a
 Copy `.env.example` to `.env.local`, set a private `BETTER_AUTH_SECRET` (at least 32 characters),
 and keep `.env.local` out of version control.
 
-Email password reset requires a Resend API key and a verified sender address in `RESEND_API_KEY`
-and `AUTH_EMAIL_FROM`. Google and GitHub sign-in are optional; set each provider's client ID and
+Email password reset uses a 6-digit code and requires a Resend API key and a verified sender
+address in `RESEND_API_KEY` and `AUTH_EMAIL_FROM`. Restart the dev server after changing `.env.local`.
+Google and GitHub sign-in are optional; set each provider's client ID and
 secret, including its `NEXT_PUBLIC_*_CLIENT_ID`, to enable its button. Register
 `http://localhost:3000/api/auth/callback/google` or
 `http://localhost:3000/api/auth/callback/github` as the matching OAuth callback URL.

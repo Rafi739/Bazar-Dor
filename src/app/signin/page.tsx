@@ -2,15 +2,14 @@
 
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
+import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
 
 export default function SignInPage() {
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError('');
     setIsLoading(true);
     const formData = new FormData(event.currentTarget);
 
@@ -21,10 +20,12 @@ export default function SignInPage() {
         callbackURL: '/',
       });
       if (result.error) {
-        setError(result.error.message || 'ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।');
+        toast.error(result.error.message || 'ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।');
+      } else {
+        toast.success('সাইন ইন সফল হয়েছে।');
       }
     } catch {
-      setError('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।');
+      toast.error('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।');
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +52,6 @@ export default function SignInPage() {
               placeholder="আপনার পাসওয়ার্ড"
               className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-emerald-600" />
           </div>
-          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
           <div className="text-right">
             <Link href="/forgot-password" className="text-xs font-semibold text-emerald-600 hover:underline">পাসওয়ার্ড ভুলে গেছেন?</Link>
           </div>
