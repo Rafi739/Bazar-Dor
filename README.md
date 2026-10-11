@@ -1,73 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# বাজার দর / BazarDor
 
-## Getting Started
+বাজার দর হলো একটি আধুনিক বাজারদর ট্র্যাকিং ও নিত্যপ্রয়োজনীয় পণ্যের মূল্য দেখার Next.js অ্যাপ্লিকেশন। ব্যবহারকারীরা প্রতিদিনের বাজারদর, ক্যাটাগরি অনুযায়ী পণ্য, দাম পরিবর্তন, এবং পণ্যের বিস্তারিত তথ্য এক নজরে দেখতে পারে।
 
-First, run the development server:
+## Short Description
+
+BazarDor is a responsive marketplace price tracker for daily essentials. It helps users compare current prices across categories, see price trends, and access a protected product details page with authentication.
+
+## Technologies Used
+
+- Next.js 16
+- App Router
+- TypeScript
+- Tailwind CSS
+- BetterAuth
+- Sonner (toast notifications)
+- Local JSON + API fallback data layer
+
+## Key Features
+
+1. Responsive home page with hero banner and product sections
+2. Category-based filtering and sorting by price
+3. Protected product detail page with login requirement
+4. Email/password + social authentication with BetterAuth
+5. Profile management, update information, and 404-friendly UX
+6. Price ticker and market comparison tables
+7. Mobile, tablet, and desktop friendly layout
+
+## Project Highlights
+
+- `আজ দাম বেড়েছে ▲` and `আজ দাম কমেছে ▼` sections
+- Full product list in a responsive grid
+- Product detail page with min/max/average price summary
+- Sort options: Default, Low to High, High to Low
+- Sign in, sign up, profile, and update profile flows
+- Friendly fallback loading and not-found screens
+
+## Setup
 
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Add your environment values before running the app, especially:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL`
+- social OAuth credentials if using Google/GitHub
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Run Production Build
 
-## Learn More
+```bash
+npm run build
+npm run start
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Notes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Authentication setup
-
-Authentication uses Better Auth with a local SQLite database stored in `.local/auth.sqlite`.
-Copy `.env.example` to `.env.local`, set a private `BETTER_AUTH_SECRET` (at least 32 characters),
-and keep `.env.local` out of version control.
-
-Password recovery sends a 6-digit code. In local development, the code is printed
-in the server terminal. For deployed environments, set `RESEND_API_KEY` and
-`AUTH_EMAIL_FROM` to a sender address verified in Resend; otherwise recovery
-emails cannot be delivered. The recovery code expires after 10 minutes.
-
-Google and GitHub sign-in are available on both the sign-in and sign-up pages.
-Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, and/or
-`GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, in `.env.local` and your deployment
-environment. These are server-only credentials; do not expose them as
-`NEXT_PUBLIC_*` variables. Set `BETTER_AUTH_URL` to the exact site origin
-(for example `https://your-domain.example`) in production. Vercel deployments
-fall back to the deployment's `VERCEL_URL` when `BETTER_AUTH_URL` is not set.
-
-Register these exact callback URLs in the OAuth provider settings:
-
-- Local Google: `http://localhost:3000/api/auth/callback/google`
-- Local GitHub: `http://localhost:3000/api/auth/callback/github`
-- Production Google: `https://your-domain.example/api/auth/callback/google`
-- Production GitHub: `https://your-domain.example/api/auth/callback/github`
-
-The production domain in each provider must match `BETTER_AUTH_URL`. Restart the
-development server after changing `.env.local`, and redeploy after changing
-deployment environment variables.
-
-## Product data API
-
-Product and category data is fetched from the Bazar Dor API. The app tries
-`https://api.api-store.workers.dev/api/bazardor` first and
-`https://api.abcz.workers.dev/api/bazardor` as a backup. If both APIs are
-unavailable, it uses the matching JSON files in `public/data/`.
+This project fetches product and category data from the Bazar Dor API with local JSON fallback for offline reliability.

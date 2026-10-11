@@ -32,6 +32,8 @@ const baseURL =
   process.env.BETTER_AUTH_URL ||
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
+const authSecret = process.env.BETTER_AUTH_SECRET || 'development-secret-for-bazar-dor-change-me';
+
 async function sendAuthEmail(email: string, subject: string, html: string, text: string) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.AUTH_EMAIL_FROM;
@@ -49,7 +51,7 @@ const authOptions = {
   appName: 'Bazar Dor',
   database: new Database(path.join(databaseDirectory, 'auth.sqlite')),
   baseURL,
-  secret: process.env.BETTER_AUTH_SECRET,
+  secret: authSecret,
   ...(Object.keys(socialProviders).length > 0 ? { socialProviders } : {}),
   emailAndPassword: {
     enabled: true,

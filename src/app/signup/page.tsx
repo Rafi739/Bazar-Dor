@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
 import SocialSignInButtons from '@/components/auth/SocialSignInButtons';
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -33,6 +35,7 @@ export default function SignUpPage() {
         toast.error(result.error.message || 'অ্যাকাউন্ট তৈরি করা যায়নি। আবার চেষ্টা করুন।');
       } else {
         toast.success('অ্যাকাউন্ট তৈরি হয়েছে। স্বাগতম!');
+        router.push('/signin');
       }
     } catch {
       toast.error('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।');

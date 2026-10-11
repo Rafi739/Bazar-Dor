@@ -1,12 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
 import SocialSignInButtons from '@/components/auth/SocialSignInButtons';
 
 export default function SignInPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -18,12 +22,13 @@ export default function SignInPage() {
       const result = await authClient.signIn.email({
         email: String(formData.get('email')),
         password: String(formData.get('password')),
-        callbackURL: '/',
+        callbackURL: redirectTo,
       });
       if (result.error) {
         toast.error(result.error.message || 'ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।');
       } else {
         toast.success('সাইন ইন সফল হয়েছে।');
+        router.replace(redirectTo);
       }
     } catch {
       toast.error('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।');

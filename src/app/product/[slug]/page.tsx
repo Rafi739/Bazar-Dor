@@ -1,6 +1,8 @@
-import { getSingleProduct } from "@/lib/api";
-import { notFound } from "next/navigation";
-import ProductDetails from "@/components/product/ProductDetails";
+import { headers } from 'next/headers';
+import { notFound, redirect } from 'next/navigation';
+import ProductDetails from '@/components/product/ProductDetails';
+import { getSingleProduct } from '@/lib/api';
+import { auth } from '@/lib/auth';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -8,6 +10,12 @@ interface PageProps {
 
 export default async function ProductDetailsPage({ params }: PageProps) {
   const resolvedParams = await params;
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session) {
+    redirect(`/signin?redirect=${encodeURIComponent(`/product/${resolvedParams.slug}`)}`);
+  }
+
   const product = await getSingleProduct(resolvedParams.slug);
 
   if (!product) {

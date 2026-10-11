@@ -72,7 +72,16 @@ export default function ProfilePage() {
         </section>
 
         <section className="mt-4 rounded-xl border border-[#e4ebe5] bg-[#fbfdfb] p-5 sm:p-6">
-          <h2 className="text-base font-semibold text-gray-900">তথ্য</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-base font-semibold text-gray-900">তথ্য</h2>
+            <button
+              type="button"
+              onClick={() => router.push('/profile/update')}
+              className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100"
+            >
+              আপডেট করুন
+            </button>
+          </div>
           <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="profile-name" className="mb-1.5 block text-sm font-medium text-gray-700">নাম</label>
