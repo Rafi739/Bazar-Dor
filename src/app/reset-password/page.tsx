@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { FormEvent, Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { authClient } from '@/lib/auth-client';
 
 export default function ResetPasswordPage() {
   return (
@@ -40,15 +39,27 @@ function ResetPasswordForm() {
     }
 
     try {
-      const result = await authClient.resetPassword({ newPassword: password, token });
-      if (result.error) {
-        toast.error(result.error.message || 'পাসওয়ার্ড পরিবর্তন করা যায়নি। নতুন রিসেট লিংক নিন।');
-      } else {
-        toast.success('পাসওয়ার্ড পরিবর্তন হয়েছে। এখন নতুন পাসওয়ার্ড দিয়ে সাইন ইন করুন।');
-        setIsSuccess(true);
+      const response = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token,
+          newPassword: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || 'পাসওয়ার্ড পরিবর্তন করা যায়নি।');
       }
-    } catch {
-      toast.error('সার্ভারের সঙ্গে যোগাযোগ করা যায়নি। নতুন রিসেট লিংক নিয়ে আবার চেষ্টা করুন।');
+
+      toast.success('পাসওয়ার্ড পরিবর্তন হয়েছে। এখন নতুন পাসওয়ার্ড দিয়ে সাইন ইন করুন।');
+      setIsSuccess(true);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'রিসেট লিংক ভুল বা মেয়াদোত্তীর্ণ।');
     } finally {
       setIsLoading(false);
     }

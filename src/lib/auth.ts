@@ -33,11 +33,59 @@ const baseURL =
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
 const authSecret = process.env.BETTER_AUTH_SECRET || 'development-secret-for-bazar-dor-change-me';
+const mockEmailLogPath = path.join(databaseDirectory, 'mock-email-log.json');
+
+function decodeMockEmailLog(): Array<{ email: string; subject: string; text: string; html: string; url?: string; createdAt: string; }> {
+  if (!fs.existsSync(mockEmailLogPath)) {
+    return [];
+  }
+
+  try {
+    const contents = fs.readFileSync(mockEmailLogPath, 'utf-8');
+    const parsed = JSON.parse(contents);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeMockEmailLog(entries: Array<{ email: string; subject: string; text: string; html: string; url?: string; createdAt: string; }>) {
+  fs.writeFileSync(mockEmailLogPath, JSON.stringify(entries, null, 2));
+}
+
+function captureMockEmail(email: string, subject: string, html: string, text: string) {
+  const url = (() => {
+    const match = html.match(/https?:\/\/[^\s"'<>]+/);
+    if (match) {
+      return match[0];
+    }
+    const textMatch = text.match(/https?:\/\/[^\s"'<>]+/);
+    return textMatch?.[0];
+  })();
+
+  const entries = decodeMockEmailLog();
+  const nextEntry = {
+    email,
+    subject,
+    html,
+    text,
+    url,
+    createdAt: new Date().toISOString(),
+  };
+
+  writeMockEmailLog([...entries, nextEntry].slice(-25));
+  return nextEntry;
+}
 
 async function sendAuthEmail(email: string, subject: string, html: string, text: string) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.AUTH_EMAIL_FROM;
   if (!apiKey || !from) {
+    if (process.env.NODE_ENV === 'development') {
+      captureMockEmail(email, subject, html, text);
+      return;
+    }
+
     throw new Error('Email service is not configured. Set RESEND_API_KEY and AUTH_EMAIL_FROM.');
   }
 
@@ -77,7 +125,12 @@ const authOptions = {
         }
         if (!process.env.RESEND_API_KEY || !process.env.AUTH_EMAIL_FROM) {
           if (process.env.NODE_ENV === 'development') {
-            console.info(`[Bazar Dor] Local password reset code for ${email}: ${otp}`);
+            captureMockEmail(
+              email,
+              'Bazar Dor password reset code',
+              `<p>Your Bazar Dor password reset code is:</p><p style="font-size:28px;font-weight:bold;letter-spacing:8px">${otp}</p><p>This code expires in 10 minutes.</p>`,
+              `Your Bazar Dor password reset code is ${otp}. It expires in 10 minutes.`,
+            );
             return;
           }
           throw new Error('Email service is not configured. Set RESEND_API_KEY and AUTH_EMAIL_FROM.');
