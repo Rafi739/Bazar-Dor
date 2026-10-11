@@ -2,6 +2,7 @@ import { betterAuth, type BetterAuthOptions } from 'better-auth';
 import { getMigrations } from 'better-auth/db/migration';
 import { emailOTP } from 'better-auth/plugins/email-otp';
 import Database from 'better-sqlite3';
+import nodemailer from 'nodemailer';
 import { Resend } from 'resend';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -33,66 +34,48 @@ const baseURL =
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
 const authSecret = process.env.BETTER_AUTH_SECRET || 'development-secret-for-bazar-dor-change-me';
-const mockEmailLogPath = path.join(databaseDirectory, 'mock-email-log.json');
-
-function decodeMockEmailLog(): Array<{ email: string; subject: string; text: string; html: string; url?: string; createdAt: string; }> {
-  if (!fs.existsSync(mockEmailLogPath)) {
-    return [];
-  }
-
-  try {
-    const contents = fs.readFileSync(mockEmailLogPath, 'utf-8');
-    const parsed = JSON.parse(contents);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeMockEmailLog(entries: Array<{ email: string; subject: string; text: string; html: string; url?: string; createdAt: string; }>) {
-  fs.writeFileSync(mockEmailLogPath, JSON.stringify(entries, null, 2));
-}
-
-function captureMockEmail(email: string, subject: string, html: string, text: string) {
-  const url = (() => {
-    const match = html.match(/https?:\/\/[^\s"'<>]+/);
-    if (match) {
-      return match[0];
-    }
-    const textMatch = text.match(/https?:\/\/[^\s"'<>]+/);
-    return textMatch?.[0];
-  })();
-
-  const entries = decodeMockEmailLog();
-  const nextEntry = {
-    email,
-    subject,
-    html,
-    text,
-    url,
-    createdAt: new Date().toISOString(),
-  };
-
-  writeMockEmailLog([...entries, nextEntry].slice(-25));
-  return nextEntry;
-}
 
 async function sendAuthEmail(email: string, subject: string, html: string, text: string) {
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailAppPassword = process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, '');
+
+  if (gmailUser && gmailAppPassword) {
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: gmailUser,
+        pass: gmailAppPassword,
+      },
+    });
+
+    await transporter.sendMail({
+      from: {
+        name: 'Bazar Dor',
+        address: gmailUser,
+      },
+      to: email,
+      subject,
+      html,
+      text,
+    });
+    return;
+  }
+
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.AUTH_EMAIL_FROM;
-  if (!apiKey || !from) {
-    if (process.env.NODE_ENV === 'development') {
-      captureMockEmail(email, subject, html, text);
-      return;
+  if (apiKey && from) {
+    const { error } = await new Resend(apiKey).emails.send({ from, to: email, subject, html, text });
+    if (error) {
+      throw new Error(`Could not send email: ${error.message}`);
     }
-
-    throw new Error('Email service is not configured. Set RESEND_API_KEY and AUTH_EMAIL_FROM.');
+    return;
   }
 
-  const { error } = await new Resend(apiKey).emails.send({ from, to: email, subject, html, text });
-  if (error) {
-    throw new Error(`Could not send email: ${error.message}`);
-  }
+  throw new Error(
+    'Email is not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD, or set RESEND_API_KEY and AUTH_EMAIL_FROM.',
+  );
 }
 
 const authOptions = {
@@ -105,14 +88,6 @@ const authOptions = {
     enabled: true,
     minPasswordLength: 8,
     revokeSessionsOnPasswordReset: true,
-    sendResetPassword: async ({ user, url }) => {
-      await sendAuthEmail(
-        user.email,
-        'Reset your Bazar Dor password',
-        `<p>We received a request to reset your password.</p><p><a href="${url}">Reset password</a></p><p>If you did not request this, you can ignore this email.</p>`,
-        `Reset your Bazar Dor password: ${url}\n\nIf you did not request this, you can ignore this email.`,
-      );
-    },
   },
   plugins: [
     emailOTP({
@@ -123,23 +98,11 @@ const authOptions = {
         if (type !== 'forget-password') {
           throw new Error(`Unsupported email code type: ${type}`);
         }
-        if (!process.env.RESEND_API_KEY || !process.env.AUTH_EMAIL_FROM) {
-          if (process.env.NODE_ENV === 'development') {
-            captureMockEmail(
-              email,
-              'Bazar Dor password reset code',
-              `<p>Your Bazar Dor password reset code is:</p><p style="font-size:28px;font-weight:bold;letter-spacing:8px">${otp}</p><p>This code expires in 10 minutes.</p>`,
-              `Your Bazar Dor password reset code is ${otp}. It expires in 10 minutes.`,
-            );
-            return;
-          }
-          throw new Error('Email service is not configured. Set RESEND_API_KEY and AUTH_EMAIL_FROM.');
-        }
         await sendAuthEmail(
           email,
-          'Bazar Dor password reset code',
-          `<p>Your Bazar Dor password reset code is:</p><p style="font-size:28px;font-weight:bold;letter-spacing:8px">${otp}</p><p>This code expires in 10 minutes. If you did not request it, you can ignore this email.</p>`,
-          `Your Bazar Dor password reset code is ${otp}. It expires in 10 minutes.`,
+          'বাজার দর — পাসওয়ার্ড রিসেট কোড',
+          `<div style="font-family:Arial,sans-serif;color:#1f2937"><h2>পাসওয়ার্ড রিসেট কোড</h2><p>আপনার পাসওয়ার্ড পরিবর্তন করতে নিচের কোডটি অ্যাপে লিখুন:</p><p style="font-size:32px;font-weight:bold;letter-spacing:10px;color:#047857">${otp}</p><p>কোডটি ১০ মিনিটের মধ্যে ব্যবহার করুন। আপনি অনুরোধ না করলে এই ইমেইলটি উপেক্ষা করুন।</p></div>`,
+          `আপনার Bazar Dor পাসওয়ার্ড রিসেট কোড: ${otp}\n\nকোডটি ১০ মিনিটের মধ্যে ব্যবহার করুন।`,
         );
       },
     }),

@@ -47,7 +47,17 @@ Add your environment values before running the app, especially:
 
 - `BETTER_AUTH_SECRET`
 - `BETTER_AUTH_URL`
+- `GMAIL_USER` and `GMAIL_APP_PASSWORD` for Gmail SMTP password-reset codes
 - social OAuth credentials if using Google/GitHub
+
+Password reset sends a six-digit code to the entered email address. Enter the
+code in the app; only after it is verified will the new-password form appear.
+For Gmail SMTP, enable 2-Step Verification on the sender Google account, create
+an App Password, then set `GMAIL_USER` and `GMAIL_APP_PASSWORD` in `.env.local`.
+Never use your regular Gmail password or commit the App Password. Resend can be
+used instead by setting `RESEND_API_KEY` and `AUTH_EMAIL_FROM`. Without a valid
+email provider configuration, the app returns an explicit error and does not
+show a fake email or print codes to the terminal.
 
 ## Run Production Build
 
