@@ -13,7 +13,7 @@ export default async function ProductDetailsPage({ params }: PageProps) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
-    redirect(`/signin?redirect=${encodeURIComponent(`/product/${resolvedParams.slug}`)}`);
+    redirect(`/signin?redirect=${encodeURIComponent(`/product/${resolvedParams.slug}`)}&reason=auth_required`);
   }
 
   const product = await getSingleProduct(resolvedParams.slug);

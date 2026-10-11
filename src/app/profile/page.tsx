@@ -17,7 +17,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!isPending && !session) {
-      router.replace('/signin');
+      router.replace('/signin?redirect=%2Fprofile&reason=auth_required');
     }
   }, [isPending, router, session]);
 

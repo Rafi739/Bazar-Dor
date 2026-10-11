@@ -22,10 +22,10 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const arrowSymbol =
     direction === 'up'
-      ? `▲ ${Math.abs(product.change?.pct ?? 0)}%`
+      ? `▲ ${new Intl.NumberFormat('bn-BD', { maximumFractionDigits: 1 }).format(Math.abs(product.change?.pct ?? 0))}%`
       : direction === 'down'
-        ? `▼ ${Math.abs(product.change?.pct ?? 0)}%`
-        : `— ${Math.abs(product.change?.pct ?? 0)}%`;
+        ? `▼ ${new Intl.NumberFormat('bn-BD', { maximumFractionDigits: 1 }).format(Math.abs(product.change?.pct ?? 0))}%`
+        : `— ${new Intl.NumberFormat('bn-BD', { maximumFractionDigits: 1 }).format(Math.abs(product.change?.pct ?? 0))}%`;
   const formattedPrice = new Intl.NumberFormat('bn-BD').format(product.today);
 
   return (

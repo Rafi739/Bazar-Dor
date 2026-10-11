@@ -6,6 +6,9 @@ interface PriceTickerProps {
 }
 
 export default function PriceTicker({ products }: PriceTickerProps) {
+  const formatPrice = (price: number) => new Intl.NumberFormat('bn-BD').format(price);
+  const formatChange = (percentage: number) =>
+    new Intl.NumberFormat('bn-BD', { maximumFractionDigits: 1 }).format(percentage);
   const hasProducts = products.length > 0;
   const tickerProducts = hasProducts ? products : [
     { id: 1, slug: 's', nameBn: 'স্বর্ণমাছি চাল', category: 'c', unit: 'কেজি', image: '🍚', today: 148, change: { dir: 'up', pct: 2.1 } },
@@ -28,7 +31,7 @@ export default function PriceTicker({ products }: PriceTickerProps) {
             <>
               <span className="text-lg">{product.image || '🛒'}</span>
               <span className="font-semibold text-gray-800">{product.nameBn}</span>
-              <span className="text-gray-900 font-bold">{product.today} টাকা/{product.unit}</span>
+              <span className="text-gray-900 font-bold">{formatPrice(product.today)} টাকা/{product.unit}</span>
               
               <span className={`flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-bold ${
                 isUp ? 'text-emerald-700 bg-emerald-50' : 
@@ -36,7 +39,7 @@ export default function PriceTicker({ products }: PriceTickerProps) {
                 'text-gray-700 bg-gray-50'
               }`}>
                 {isUp ? '▲' : isDown ? '▼' : '—'} 
-                {Math.abs(product.change?.pct || 0)}%
+                {formatChange(Math.abs(product.change?.pct || 0))}%
               </span>
             </>
           );

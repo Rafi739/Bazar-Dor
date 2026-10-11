@@ -7,6 +7,17 @@ import { Suspense } from "react";
 import { Toaster } from "sonner";
 import './globals.css';
 
+async function SiteHeader() {
+  const [products, categories] = await Promise.all([getAllProducts(), getCategories()]);
+
+  return (
+    <>
+      <Navbar categories={categories} />
+      <PriceTicker products={products} />
+    </>
+  );
+}
+
 export const metadata: Metadata = {
   title: "বাজার দর",
   description: "বাংলাদেশের নিত্যপ্রয়োজনীয় পণ্যের বাজারদর এক নজরে দেখুন।",
@@ -22,15 +33,17 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [products, categories] = await Promise.all([getAllProducts(), getCategories()]);
-
   return (
     <html lang="bn">
       <body className="bg-gray-50/50 flex flex-col min-h-screen" suppressHydrationWarning={true}>
-        <Suspense fallback={<header aria-hidden="true" className="h-28 border-b border-gray-100 bg-white" />}>
-          <Navbar categories={categories} />
+        <Suspense fallback={
+          <div aria-hidden="true">
+            <header className="h-28 animate-pulse border-b border-gray-100 bg-white" />
+            <div className="h-12 animate-pulse border-b border-gray-100 bg-gray-50" />
+          </div>
+        }>
+          <SiteHeader />
         </Suspense>
-        <PriceTicker products={products} />
         
         <main className="grow">
           {children}

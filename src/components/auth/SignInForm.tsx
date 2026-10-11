@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
 import SocialSignInButtons from '@/components/auth/SocialSignInButtons';
@@ -11,7 +11,14 @@ export default function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/';
+  const redirectReason = searchParams.get('reason');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (redirectReason === 'auth_required') {
+      toast.error('এই পৃষ্ঠাটি দেখতে সাইন ইন করুন।', { id: 'protected-route-auth-required' });
+    }
+  }, [redirectReason]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

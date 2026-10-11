@@ -12,7 +12,7 @@ export default function UpdateProfilePage() {
 
   useEffect(() => {
     if (!isPending && !session) {
-      router.replace('/signin?redirect=/profile/update');
+      router.replace('/signin?redirect=%2Fprofile%2Fupdate&reason=auth_required');
     }
   }, [isPending, router, session]);
 
